@@ -3,12 +3,12 @@
 #Introduction to Project
 
 
-Description of Data
+#Description of Data
 
 
-Team Description
+#Team Description
 
 
-Installation instructions
+#Installation instructions
 
 
