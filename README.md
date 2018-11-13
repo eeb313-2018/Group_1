@@ -2,7 +2,7 @@
 
 # Introduction to Project
 
-Using the mammalian life history data set we will investigate life history tradeoffs with respect to theory of senescence. Specifically we will examine if resource tradeoffs differ between life stages. We expect to see that there is negative correlation between resource allocation to reproduction in our mammals and resource allocation somatic maintenance (Life Expectancy) indicating that there is a tradeoff. This study is important as it allows us to infer whether there are trends with respect to different genera and mammals allow for potential to infer into human systems. This is interesting becasueDue of the the fact that mammals invest higher into offspring than other groups.
+Using the mammalian life history data set we will investigate life history tradeoffs with respect to theory of senescence. Specifically we will examine if resource tradeoffs differ between life stages. We expect to see that there is negative correlation between resource allocation to reproduction in our mammals and resource allocation somatic maintenance (Life Expectancy) indicating that there is a tradeoff. This study is important as it allows us to infer whether there are trends with respect to different genera and mammals allow for potential to infer into human systems. This is interesting becasue of the the fact that mammals invest higher into offspring than other groups.
 
 # Description of Data
 
