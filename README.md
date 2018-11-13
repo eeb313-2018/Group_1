@@ -9,13 +9,10 @@ The purpose of this dataset was to compile general life history characteristics 
 
 S. K. Morgan Ernest. 2003. Life history characteristics of placental non-volant mammals. Ecology 84:3402.
 
+
 #Team Description
 
 Franco: graph creation and modification, basic statistical output interpretation, fixation of error in R code (e.g. typos).
 
+
 #Installation instructions
-
-
-
-
-
