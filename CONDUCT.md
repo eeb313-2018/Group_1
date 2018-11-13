@@ -6,3 +6,4 @@ Code of conduct:
 (https://github.com/UofTCoders/studyGroup/blob/gh-pages/codeOfConduct.md)
 - Update regularly any work progress / new ideas
 -If needed, ask help ASAP
+- commit to coming to class every tues/thurs to work on this project
