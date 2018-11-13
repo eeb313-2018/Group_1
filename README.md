@@ -14,5 +14,12 @@ S. K. Morgan Ernest. 2003. Life history characteristics of placental non-volant 
 
 Franco: graph creation and modification, basic statistical output interpretation, fixation of error in R code (e.g. typos).
 
+Jen: 
+- Interests: Animals, veterinary medicine
+- Strengths: Ecological interpretation, adapting code to dataset/research question, graph interpretation
+- Weaknesses: Spelling
+
+Group roles will be assigned at the beginning of each meeting session and rotated organically.
+
 
 #Installation instructions
