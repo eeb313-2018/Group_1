@@ -13,8 +13,9 @@ S. K. Morgan Ernest. 2003. Life history characteristics of placental non-volant 
 
 # Team Description
 
-Franco: graph creation and modification, basic statistical output interpretation, fixation of error in R code (e.g. typos).
-
+Franco: Fourth Year Environmental Science/ Environmental Biology Majors interested in biodiversity and Alpine ecosystems 
+Strengths: graph creation and modification, basic statistical output interpretation, fixation of error in R code (e.g. typos).
+Weaknesses: writing, GitHub
 
 Matthew: Fifth Year Ecology and Evolutionary Biology Major studying Plant Evolutionary Dynamics. Working on undergraduate project on phenotypic plasticity in Queen Anne's Lace in response to Frost Events. Skills:Graph Analysis, Data wrangling, field identification
 
