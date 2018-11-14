@@ -23,6 +23,10 @@ Jen:
 - Strengths: Ecological interpretation, adapting code to dataset/research question, graph interpretation
 - Weaknesses: Spelling
 
+Natasha: Fourth year EEB/Global Health Major(s) - passionate about marine + aquatic ecosystems, biodiversity, sustainability and conservation. 
+- strengths include data cleaning, graph analysis, ecological interpretation
+- weaknesses include using github (currently)
+
 Group roles will be assigned at the beginning of each meeting session and rotated organically.
 
 
