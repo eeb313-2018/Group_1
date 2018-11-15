@@ -17,6 +17,36 @@ library(naniar)
 mammal_life_history <- mammal_life_history %>% replace_with_na_all(condition = ~.x==-999.00)
 ```
 
+
 ```{r}
+mammal_life_history <- mammal_life_history %>% 
+  mutate(parental_allocation = (wean_mass_g - newborn_g))
 mammal_life_history
+```
+```[r]
+mammal_life_history %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=max_life_mo))+
+  geom_point()+
+  geom_smooth(method = "lm")+
+  facet_wrap(~order)+
+  theme_classic()
+```
+
+```{r}
+library(lme4)
+library(lmerTest)
+thing <- lmer(data = mammal_life_history, max_life_mo~parental_allocation + (1|family))
+summary(thing)
+```
+
+```{r}
+mammal_life_history %>% 
+  filter(order == 'Primates') %>% 
+  ggplot(aes(x=wean_mass_g, y=litters_year, color = family))+
+  geom_point(size = 3)+
+  scale_colour_brewer(palette="Set1") +
+  scale_fill_brewer(palette="Set1") +
+  geom_polygon(aes(fill = family), alpha = 0.2)+
+  theme_classic()
 ```
