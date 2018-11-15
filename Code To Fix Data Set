@@ -1,0 +1,22 @@
+---
+title: "Fixing the Mammal Life History Data Set"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+mammal_life_history <- readr::read_csv('Mammal_life_history.csv')
+```
+
+```{r}
+#install.packages('naniar')
+library(naniar)
+```
+
+```{r}
+mammal_life_history <- mammal_life_history %>% replace_with_na_all(condition = ~.x==-999.00)
+```
+
+```{r}
+mammal_life_history
+```
