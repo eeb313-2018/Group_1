@@ -1,0 +1,806 @@
+---
+title: "Life History Tradeoffs"
+output:
+  html_document:
+    df_print: paged
+---
+#loading packages and dataset
+```{r}
+library(tidyverse)
+mammal_life_history <- readr::read_csv('Mammal_life_history.csv')
+```
+
+```{r}
+#install.packages('naniar')
+library(naniar)
+```
+##Data Wrangling
+# Tidying dataset to replace values = -999 to NA
+```{r}
+mammal_life_history <- mammal_life_history %>% replace_with_na_all(condition = ~.x==-999.00)
+```
+# Adding new variables using _mutate_; parental allocation, scaling of AFR, gestation length and weaning months to max life months, and scaling litters per year to litters per life.
+```{r}
+mammal_life_history <- mammal_life_history %>% 
+  mutate(parental_allocation = ((wean_mass_g/mass_g) - (newborn_g/mass_g)))
+
+mammal_life_history <- mammal_life_history %>% 
+  mutate(scaled_AFR_mo = (AFR_mo/max_life_mo))
+
+mammal_life_history <- mammal_life_history %>% 
+  mutate(scaled_gestation_mo = (gestation_mo/max_life_mo))
+
+mammal_life_history <- mammal_life_history %>% 
+  mutate(scaled_weaning_mo = (weaning_mo/max_life_mo))
+
+mammal_life_history <- mammal_life_history %>% 
+  mutate(litters_life = ((max_life_mo - AFR_mo)/12)*litters_year)
+
+mammal_life_history <- mammal_life_history %>% 
+  mutate(offspring_tot = (litters_life*litter_size))
+
+mammal_life_history
+```
+# Filtering mammalian life history dataset to only include orders from super order Eurachontoglires 
+```{r}
+euarchontoglires <- mammal_life_history %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates' | order == 'Dermoptera' | order == 'Scandentia')
+```
+##Initial data visualization (basic graphing with ggplot)
+
+# Plotting parental allocation vs. max life span for the 3 orders of interest in euarchontoglires
+```{r}
+euarchontoglires %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=max_life_mo))+
+  geom_point(alpha = 0.6)+
+  stat_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  xlab("Parental Allocation Fraction")+
+  ylab("Maximum Life-Span (months)")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Maximum Life-Span With Respect versus Parental Allocation to Offspring")+
+  facet_wrap(~order)+
+  theme_classic()
+```
+
+
+# Plotting parental allocation vs. life span scaled average age at reproduction for the 3 orders of interest in euarchontoglires
+```{r}
+euarchontoglires %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=scaled_AFR_mo))+
+  geom_point(alpha = 0.6)+
+  geom_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  xlab("Parental Allocation Fraction")+
+  ylab("Life-Span Scaled Average Age at First Reproduction")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Average Age at First Reproduction versus Parental Allocation to Offspring")+
+  facet_wrap(~order)+
+  theme_classic()
+```
+# Plotting parental allocation vs. average litters per year for the 3 orders of interest in euarchontoglires
+```{r}
+euarchontoglires %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=litters_year))+
+  geom_point(alpha = 0.6)+
+  geom_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Number of Litters per Year")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Average Litters per Year and Parental Allocation to Offspring")+
+  facet_wrap(~order)+
+  theme_classic()
+```
+# Plotting parental allocation vs. average litter size for the 3 orders of interest in euarchontoglires
+```{r}
+euarchontoglires %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=litter_size))+
+  geom_point(alpha = 0.6)+
+  geom_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Litter Size")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Average Litter Size versus Parental Allocation to Offspring")+
+  facet_wrap(~order)+
+  theme_classic()
+```
+# Plotting parental allocation vs. life span scaled average gestation period for the 3 orders of interest in euarchontoglires
+```{r}
+euarchontoglires %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=scaled_gestation_mo))+
+  geom_point(alpha = 0.6)+
+  geom_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  xlab("Parental Allocation Fraction")+
+  ylab("Life-Span Scaled Average Gestation Period")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Average Gestation Period versus Parental Allocation to Offspring")+
+  facet_wrap(~order)+
+  theme_classic()
+```
+# Plotting parental allocation vs. life span scaled weaning age for the 3 orders of interest in euarchontoglires
+```{r}
+euarchontoglires %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=scaled_weaning_mo))+
+  geom_point(alpha = 0.6)+
+  geom_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  xlab("Parental Allocation Fraction")+
+  ylab("Life Span Scaled Average Weaning Age")+
+  facet_wrap(~order)+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Average Weaning Age versus Parental Allocation to Offspring")+
+  theme_classic()
+```
+# Plotting parental allocation vs. life span scaled average age at reproduction for the 3 orders of interest in euarchontoglires
+```{r}
+euarchontoglires %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=litters_life))+
+  geom_point(alpha = 0.6)+
+  geom_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Litters per Lifetime (months)")+
+  facet_wrap(~order)+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Average Litters per Life versus Parental Allocation to Offspring")+
+  theme_classic()
+```
+
+##Plotting Parental Allocation vs. Average Total Offspring
+```{r}
+euarchontoglires %>% 
+  filter(order == 'Rodentia' | order == 'Lagomorpha'| order == 'Primates') %>% 
+  ggplot(aes(x=parental_allocation, y=offspring_tot))+
+  geom_point(alpha = 0.6)+
+  geom_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Total Offspring")+
+  facet_wrap(~order)+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Average Total Offspring versus Parental Allocation to Offspring")+
+  theme_classic()
+```
+
+```{r}
+library(lme4)
+library(lmerTest)
+```
+#Datasets for the 3 orders of interest (primates, rodentia, lagomorpha)
+```{r}
+Rodents <- euarchontoglires %>% 
+  filter(order == 'Rodentia')
+
+Lagomorphs <- euarchontoglires %>% 
+  filter(order == 'Lagomorpha')
+
+Primates <- euarchontoglires %>% 
+  filter(order == 'Primates')
+```
+##Exploratory Data Analysis.
+##LMER
+
+#How Parental Allocation Predicts Maximum Life Span, LMER tests were run for the 3 orders of interest and for the superorder
+#rodents
+```{r}
+rodents_parental_allocation_max_life_mo <- lmer(data = Rodents, max_life_mo~parental_allocation + (1|family))
+summary(rodents_parental_allocation_max_life_mo)
+```
+#lagomorphs
+```{r}
+lagomorphs_parental_allocation_max_life_mo <- lmer(data = Lagomorphs, max_life_mo~parental_allocation + (1|family))
+summary(lagomorphs_parental_allocation_max_life_mo)
+```
+#primates
+```{r}
+primates_parental_allocation_max_life_mo <- lmer(data = Primates, max_life_mo~parental_allocation + (1|family))
+summary(primates_parental_allocation_max_life_mo)
+```
+#superorder
+```{r}
+superorder_parental_allocation_max_life_mo <- lmer(data = euarchontoglires, max_life_mo~parental_allocation + (1|family))
+summary(superorder_parental_allocation_max_life_mo)
+```
+
+##LMER accounting for _Nested Effects_ of families in each order for the superorder for the tradeoff of max_life_mo and parental allocation
+
+```{r}
+nested_effects_parental_allocation_max_life_mo <- lmer(data = euarchontoglires, max_life_mo~parental_allocation*order + (1|order/family))
+summary(nested_effects_parental_allocation_max_life_mo)
+```
+
+- No significant results in any of the orders or throughout Euarchontiglires
+
+
+#How Parental Allocation predicts Life-Span Scaled Average Age at Reproduction, LMER tests were run for the 3 orders of interest and for the superorder.
+#primates
+```{r}
+primates_parental_allocation_scaled_AFR_mo <- lmer(data = Primates, scaled_AFR_mo~parental_allocation + (1|family))
+summary(primates_parental_allocation_scaled_AFR_mo)
+```
+#rodents
+```{r}
+rodents_parental_allocation_scaled_AFR_mo <- lmer(data = Rodents, scaled_AFR_mo~parental_allocation + (1|family))
+summary(rodents_parental_allocation_scaled_AFR_mo)
+```
+#lagomorphs
+```{r}
+lagomorphs_parental_allocation_scaled_AFR_mo <- lmer(data = Lagomorphs, scaled_AFR_mo~parental_allocation + (1|family))
+summary(lagomorphs_parental_allocation_scaled_AFR_mo)
+```
+#superorder 
+```{r}
+superorder_parental_allocation_scaled_AFR_mo <- lmer(data = euarchontoglires, scaled_AFR_mo~parental_allocation + (1|family))
+summary(superorder_parental_allocation_scaled_AFR_mo)
+```
+
+##LMER accounting for _Nested Effects_ of families in each order for the superorder for the tradeoff of max_life_mo and parental allocation
+
+```{r}
+nested_effects_parental_allocation_scaled_AFR_mo <- lmer(data = euarchontoglires, scaled_AFR_mo~parental_allocation*order + (1|order/family))
+summary(nested_effects_parental_allocation_scaled_AFR_mo)
+```
+
+- Significant to '**' p < 0.01 in Primates but not significant in other orders or across Euarchontoglires
+
+
+#How Parental Allocation Predicts Life-Span Scaled Gestation Length, LMER tests were run for the 3 orders of interest and for the superorder.
+#primates
+```{r}
+primates_parental_allocation_scaled_gestation_mo <- lmer(data = Primates, scaled_gestation_mo~parental_allocation + (1|family))
+summary(primates_parental_allocation_scaled_gestation_mo)
+```
+#rodents
+```{r}
+rodents_parental_allocation_scaled_gestation_mo <- lmer(data = Rodents, scaled_gestation_mo~parental_allocation + (1|family))
+summary(rodents_parental_allocation_scaled_gestation_mo)
+```
+#lagomorphs
+```{r}
+lagomorphs_parental_allocation_scaled_gestation_mo <- lmer(data = Lagomorphs, scaled_gestation_mo~parental_allocation + (1|family))
+summary(lagomorphs_parental_allocation_scaled_gestation_mo)
+```
+#superorder
+```{r}
+superorder_parental_allocation_scaled_gestation_mo <- lmer(data = euarchontoglires, scaled_gestation_mo~parental_allocation + (1|family))
+summary(superorder_parental_allocation_scaled_gestation_mo)
+```
+
+##LMER accounting for _Nested Effects_ of families in each order for the superorder for the tradeoff of sclaed_gestation and parental allocation
+
+```{r}
+nested_effects_parental_allocation_scaled_gestation_mo <- lmer(data = euarchontoglires, scaled_gestation_mo~parental_allocation*order + (1|order/family))
+summary(nested_effects_parental_allocation_scaled_gestation_mo)
+```
+
+- No significant results in any orders or throughout Euarchontoglires
+
+#How Parental Allocation predicts Average Litter Size, LMER tests were run for the 3 orders of interest and for the superorder.
+#primates
+```{r}
+primates_parental_allocation_litter_size <- lmer(data = Primates , litter_size~parental_allocation + (1|family))
+summary(primates_parental_allocation_litter_size)
+```
+#rodents
+```{r}
+rodents_parental_allocation_litter_size <- lmer(data = Rodents , litter_size~parental_allocation + (1|family))
+summary(rodents_parental_allocation_litter_size)
+```
+#lagomorphs
+```{r}
+lagomorphs_parental_allocation_litter_size <- lmer(data = Lagomorphs  , litter_size~parental_allocation + (1|family))
+summary(lagomorphs_parental_allocation_litter_size)
+```
+#euarchontoglires
+```{r}
+superorder_parental_allocation_litter_size <- lmer(data = euarchontoglires, litter_size~parental_allocation + (1|family))
+summary(superorder_parental_allocation_litter_size)
+```
+
+##LMER accounting for _Nested Effects_ of families in each order for the superorder for the tradeoff of litter size and parental allocation
+
+```{r}
+nested_effects_parental_allocation_litter_size <- lmer(data = euarchontoglires, litter_size~parental_allocation*order + (1|order/family))
+summary(nested_effects_parental_allocation_litter_size)
+```
+
+- Slightly significant p < 0.05 across all of Euarchontoglires
+
+#How Parental Allocation Predicts Litters per Year,LMER tests were run for the 3 orders of interest and for the superorder.
+#primates
+```{r}
+primates_parental_allocation_litters_year <- lmer(data = Primates , litters_year~parental_allocation + (1|family))
+summary(primates_parental_allocation_litters_year)
+```
+#rodents
+```{r}
+rodents_parental_allocation_litters_year <- lmer(data = Rodents, litters_year~parental_allocation + (1|family))
+summary(rodents_parental_allocation_litters_year)
+```
+#lagomorphs
+```{r}
+lagomorphs_parental_allocation_litters_year <- lmer(data = Lagomorphs, litters_year~parental_allocation + (1|family))
+summary(lagomorphs_parental_allocation_litters_year)
+```
+#superorder
+```{r}
+superorder_parental_allocation_litters_year <- lmer(data = euarchontoglires, litters_year~parental_allocation + (1|family))
+summary(superorder_parental_allocation_litters_year)
+```
+
+##LMER accounting for _Nested Effects_ of families in each order for the superorder for the tradeoff of litters per year and parental allocation
+
+```{r}
+nested_effects_parental_allocation_litters_year <- lmer(data = euarchontoglires, litters_year~parental_allocation*order + (1|order/family))
+summary(nested_effects_parental_allocation_litters_year)
+```
+
+- Significant in Primates to p < 0.01 but not significant in any other orders or across all of Euarchontoglires
+
+#How Parental Allocation Predicts Weaning Age, LMER tests were run for the 3 orders of interest and for the superorder.
+#primates
+```{r}
+primates_parental_allocation_scaled_weaning_mo <- lmer(data = Primates, scaled_weaning_mo~parental_allocation + (1|family))
+summary(primates_parental_allocation_scaled_weaning_mo)
+```
+#rodents
+```{r}
+rodents_parental_allocation_scaled_weaning_mo<- lmer(data = Rodents, scaled_weaning_mo~parental_allocation + (1|family))
+summary(rodents_parental_allocation_scaled_weaning_mo)
+```
+#lagomorphs
+```{r}
+lagomorphs_parental_allocation_scaled_weaning_mo <- lmer(data = Lagomorphs, scaled_weaning_mo~parental_allocation + (1|family))
+summary(lagomorphs_parental_allocation_scaled_weaning_mo)
+```
+#superorder
+```{r}
+superorder_parental_allocation_scaled_weaning_mo <- lmer(data = euarchontoglires, scaled_weaning_mo~parental_allocation + (1|family))
+summary(superorder_parental_allocation_scaled_weaning_mo)
+```
+
+
+##LMER accounting for _Nested Effects_ of families in each order for the superorder for the scaled weaning age and parental allocation
+```{r}
+nested_effects_parental_allocation_scaled_weaning_mo <- lmer(data = euarchontoglires, scaled_weaning_mo~parental_allocation*order + (1|order/family))
+summary(nested_effects_parental_allocation_scaled_weaning_mo)
+```
+
+- Significant in primates to p < 0.01 but no significant in other orders or across all of Euarchontoglires.
+
+#How Parental Allocation Predicts Average Litters per Lifetime, LMER tests were run for the 3 orders of interest and for the superorder.
+#primates
+```{r}
+primates_parental_allocation_litters_life<- lmer(data = Primates, litters_life~parental_allocation + (1|family))
+summary(primates_parental_allocation_litters_life)
+```
+#rodents
+```{r}
+rodents_parental_allocation_litters_life <- lmer(data = Rodents, litters_life~parental_allocation + (1|family))
+summary(rodents_parental_allocation_litters_life)
+```
+#lagomorphs
+```{r}
+lagomorph_parental_allocation_litters_life <- lmer(data = Lagomorphs, litters_life~parental_allocation + (1|family))
+summary(lagomorph_parental_allocation_litters_life)
+```
+#superorder
+```{r}
+superorder_parental_allocation_litters_life <- lmer(data = euarchontoglires, litters_life~parental_allocation + (1|family))
+summary(superorder_parental_allocation_litters_life)
+```
+
+##LMER accounting for _Nested Effects_ of families in each order for the superorder for the litters per life and parental allocation
+```{r}
+nested_effects_parental_allocation_litters_life <- lmer(data = euarchontoglires, litters_life~parental_allocation*order + (1|order/family))
+summary(nested_effects_parental_allocation_litters_life)
+```
+
+##How Parental Allocation Predicts Average Total Offspring
+
+###primates
+```{r}
+primates_parental_allocation_offspring_tot<- lmer(data = Primates, offspring_tot~parental_allocation + (1|family))
+summary(primates_parental_allocation_offspring_tot)
+```
+
+###rodents
+```{r}
+rodents_parental_allocation_offspring_tot<- lmer(data = Rodents, offspring_tot~parental_allocation + (1|family))
+summary(rodents_parental_allocation_offspring_tot)
+```
+
+###lagomorphs
+```{r}
+lagomorphs_parental_allocation_offspring_tot<- lmer(data = Lagomorphs, offspring_tot~parental_allocation + (1|family))
+summary(lagomorphs_parental_allocation_offspring_tot)
+```
+
+###superorder
+
+```{r}
+euarchontoglires_parental_allocation_offspring_tot<- lmer(data = euarchontoglires, offspring_tot~parental_allocation + (1|family))
+summary(euarchontoglires_parental_allocation_offspring_tot)
+```
+
+##LMER accounting for _Nested Effects_ of families in each order for the superorder for the offspring total and parental allocation
+```{r}
+nested_effects_parental_allocation_offspring_tot <- lmer(data = euarchontoglires, offspring_tot~parental_allocation*order + (1|order/family))
+summary(nested_effects_parental_allocation_offspring_tot)
+```
+
+#Data visualization - Clustering Graphs for tradeoffs that were found significant, in the only family that demonstrated this significance - primates
+
+##family clustering visualization for parental allocation vs. average weaning age tradeoff
+```{r}
+library(plyr)
+
+Primates <- na.omit(Primates)
+
+find_hull <- function(df) df[chull(df$parental_allocation, df$scaled_weaning_mo), ]
+
+hulls <- ddply(Primates, "family", find_hull)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = scaled_weaning_mo, color = family))+
+  geom_point(size = 2)+
+  theme_classic()+
+  xlab("Parental Allocation Fraction")+
+  ylab("Life Span Scaled Average Weaning Age")+
+  labs(caption = "Hulls represent clustering based on Family for the Order Primates", title = "Family Clustering for Parental Allocation versus Average Weaning Age")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  geom_polygon(data = hulls, aes(fill = family), alpha = 0.2)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = scaled_weaning_mo, color = family))+
+  geom_point(size = 2)+
+  stat_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  theme_classic()+
+  scale_color_brewer(palette = "Set1")+
+  xlab("Parental Allocation Fraction")+
+  ylab("Life Span Scaled Average Weaning Age")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Parental Allocation versus Average Weaning Age")
+
+```
+
+###MANOVA of Parental Allocation and Average Weaning Age vs. Family for Primates
+```{r}
+#install.packages("multcomp")
+library(multcomp)
+Primates$family <- as.factor(Primates$family)
+outcome <- cbind(Primates$parental_allocation, Primates$scaled_weaning_mo)
+
+newModel <- manova(outcome ~ family, data = Primates)
+
+summary(newModel, intercept = TRUE)
+```
+
+###PostHoc "Tukey" Test for Parental Allocation and Average Weaning Age vs. Family for Primates
+```{r}
+PA_Model <- lm(parental_allocation~family, data = Primates)
+SWM_Model <- lm(scaled_weaning_mo~family, data = Primates)
+
+postHocs <- glht(PA_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs) #Relationships between families in terms of parental allocation
+
+postHocs2 <- glht(SWM_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs2) #Relationships between families in terms of weaning age
+```
+
+##family clustering visualization for parental allocation vs. average age at reproduction tradeoff
+```{r}
+find_hull <- function(df) df[chull(df$parental_allocation, df$scaled_AFR_mo), ]
+
+hulls <- ddply(Primates, "family", find_hull)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = scaled_AFR_mo, color = family))+
+  geom_point(size = 2)+
+  theme_classic()+
+  xlab("Parental Allocation Fraction")+
+  ylab("Life Span Scaled Average Age at Reproduction")+
+  labs(caption = "Hulls represent clustering based on Family for the Order Primates", title = "Family Clustering for Parental Allocation versus Average Age at Reproduction")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  geom_polygon(data = hulls, aes(fill = family), alpha = 0.2)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = scaled_AFR_mo, color = family))+
+  geom_point(size = 2)+
+  stat_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  theme_classic()+
+  scale_color_brewer(palette = "Set1")+
+  xlab("Parental Allocation Fraction")+
+  ylab("Life Span Scaled Average Age at Reproduction")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Parental Allocation versus Average Age at Reproduction")
+```
+
+###MANOVA of Parental Allocation and Average Age at Reproduction vs. Family for Primates
+```{r}
+Primates$family <- as.factor(Primates$family)
+outcome <- cbind(Primates$parental_allocation, Primates$scaled_AFR_mo)
+
+newModel <- manova(outcome ~ family, data = Primates)
+
+summary(newModel, intercept = TRUE)
+```
+
+###PostHoc "Tukey" Test for Parental Allocation and Average Age at Reproduction vs. Family for Primates
+```{r}
+PA_Model <- lm(parental_allocation~family, data = Primates)
+SAFRM_Model <- lm(scaled_AFR_mo~family, data = Primates)
+
+postHocs <- glht(PA_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs) #Relationships between families in terms of parental allocation
+
+postHocs2 <- glht(SAFRM_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs2) #Relationships between families in terms of age at reproduction
+```
+
+##family clustering visualization for parental allocation vs. number of litters per year tradeoff
+```{r}
+find_hull <- function(df) df[chull(df$parental_allocation, df$litters_year), ]
+
+hulls <- ddply(Primates, "family", find_hull)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = litters_year, color = family))+
+  geom_point(size = 2)+
+  theme_classic()+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average litters per Year")+
+  labs(caption = "Hulls represent clustering based on Family for the Order Primates", title = "Family Clustering for Parental Allocation versus Average Litters per Year")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  geom_polygon(data = hulls, aes(fill = family), alpha = 0.2)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = litters_year, color = family))+
+  geom_point(size = 2)+
+  stat_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  theme_classic()+
+  scale_color_brewer(palette = "Set1")+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Litters per Year")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Parental Allocation versus Average Litters per Year")
+```
+
+###MANOVA of Parental Allocation and Average Number of Litters per Year vs. Family for Primates
+```{r}
+Primates$family <- as.factor(Primates$family)
+outcome <- cbind(Primates$parental_allocation, Primates$litters_year)
+
+newModel <- manova(outcome ~ family, data = Primates)
+
+summary(newModel, intercept = TRUE)
+```
+
+###PostHoc "Tukey" Test for Parental Allocation and Average Number of Litters per Year vs. Family for Primates
+```{r}
+PA_Model <- lm(parental_allocation~family, data = Primates)
+LY_Model <- lm(litters_year~family, data = Primates)
+
+postHocs <- glht(PA_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs) #Relationships between families in terms of parental allocation
+
+postHocs2 <- glht(LY_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs2) #Relationships between families in terms of litters per year
+```
+
+##family clustering visualization for parental allocation vs. number of litters per life tradeoff
+```{r}
+find_hull <- function(df) df[chull(df$parental_allocation, df$litters_life), ]
+
+hulls <- ddply(Primates, "family", find_hull)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = litters_life, color = family))+
+  geom_point(size = 2)+
+  theme_classic()+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Litters per Life")+
+  labs(caption = "Hulls represent clustering based on Family for the Order Primates", title = "Family Clustering for Parental Allocation versus Average Litters per Life")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  geom_polygon(data = hulls, aes(fill = family), alpha = 0.2)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = litters_life, color = family))+
+  geom_point(size = 2)+
+  stat_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  theme_classic()+
+  scale_color_brewer(palette = "Set1")+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Litters per Life")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Parental Allocation versus Average Litters per Life")
+```
+
+###MANOVA of Parental Allocation and Average Number of Litters per Life vs. Family for Primates
+```{r}
+Primates$family <- as.factor(Primates$family)
+outcome <- cbind(Primates$parental_allocation, Primates$litters_life)
+
+newModel <- manova(outcome ~ family, data = Primates)
+
+summary(newModel, intercept = TRUE)
+```
+
+###PostHoc "Tukey" Test for Parental Allocation and Average Number of Litters per Year vs. Family for Primates
+```{r}
+PA_Model <- lm(parental_allocation~family, data = Primates)
+LL_Model <- lm(litters_life~family, data = Primates)
+
+postHocs <- glht(PA_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs) #Relationships between families in terms of parental allocation
+
+postHocs2 <- glht(LL_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs2) #Relationships between families in terms of litters per life
+```
+
+##family clustering visualization for parental allocation vs. total offspring tradeoff
+```{r}
+library(plyr)
+
+Primates <- na.omit(Primates)
+
+find_hull <- function(df) df[chull(df$parental_allocation, df$offspring_tot), ]
+
+hulls <- ddply(Primates, "family", find_hull)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = offspring_tot, color = family))+
+  geom_point(size = 2)+
+  theme_classic()+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Total Offspring")+
+  labs(caption = "Hulls represent clustering based on Family for the Order Primates", title = "Family Clustering for Parental Allocation versus Average Total Offspring")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  geom_polygon(data = hulls, aes(fill = family), alpha = 0.2)
+
+Primates %>% 
+  ggplot(aes(x = parental_allocation, y = offspring_tot, color = family))+
+  geom_point(size = 2)+
+  stat_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  theme_classic()+
+  scale_color_brewer(palette = "Set1")+
+  xlab("Parental Allocation Fraction")+
+  ylab("Life Span Scaled Average Total Offspring")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Parental Allocation versus Average Total Offspring")
+
+```
+
+###MANOVA of Parental Allocation and Average Total Offspring vs. Family for Primates
+```{r}
+Primates$family <- as.factor(Primates$family)
+outcome <- cbind(Primates$parental_allocation, Primates$offspring_tot)
+
+newModel <- manova(outcome ~ family, data = Primates)
+
+summary(newModel, intercept = TRUE)
+```
+
+###PostHoc "Tukey" Test for Parental Allocation and Average Total Offspring vs. Family for Primates
+```{r}
+PA_Model <- lm(parental_allocation~family, data = Primates)
+OT_Model <- lm(offspring_tot~family, data = Primates)
+
+postHocs <- glht(PA_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs) #Relationships between families in terms of parental allocation
+
+postHocs2 <- glht(OT_Model, linfct = mcp(family = "Tukey"))
+summary(postHocs2) #Relationships between families in terms of total offspring
+```
+
+#Data visualization - Clustering Graphs for tradeoff that was found significant in the superorder
+
+##family clustering visualization for parental allocation vs. litter size tradeoff
+```{r}
+euarchontoglires <- na.omit(euarchontoglires)
+
+find_hull <- function(df) df[chull(df$parental_allocation, df$litter_size), ]
+
+hulls <- ddply(euarchontoglires, "order", find_hull)
+
+euarchontoglires %>% 
+  ggplot(aes(x = parental_allocation, y = litter_size, color = order))+
+  geom_point(size = 2)+
+  theme_classic()+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Litter Size")+
+  labs(caption = "Hulls represent clustering based on Order for the Super Order Euarchontoglires", title = "Family Clustering for Parental Allocation versus Average Litter Size")+
+  scale_color_brewer(palette = "Set1")+
+  scale_fill_brewer(palette = "Set1")+
+  geom_polygon(data = hulls, aes(fill = order), alpha = 0.2)
+
+euarchontoglires %>% 
+  ggplot(aes(x = parental_allocation, y = litter_size, color = order))+
+  geom_point(size = 2)+
+  stat_smooth(method = "lm", color = 'darkblue', fill = 'lightgrey')+
+  theme_classic()+
+  scale_color_brewer(palette = "Set1")+
+  xlab("Parental Allocation Fraction")+
+  ylab("Average Litter Size")+
+  labs(caption = "Shaded areas represent 95% confidence interval", title = "Parental Allocation versus Average Litter Size in Euarchontoglires")
+```
+
+###MANOVA of Parental Allocation and Average Litter Size vs. Family for Euarchontoglires
+```{r}
+euarchontoglires$order <- as.factor(euarchontoglires$order)
+outcome <- cbind(euarchontoglires$parental_allocation, euarchontoglires$litter_size)
+
+newModel <- manova(outcome ~ order, data = euarchontoglires)
+
+summary(newModel, intercept = TRUE)
+```
+
+###PostHoc "Tukey" Test for Parental Allocation and Average Litter Size vs. Family for Eurarchontoglires
+```{r}
+PA_Model <- lm(parental_allocation~order, data = euarchontoglires)
+LS_Model <- lm(litter_size~order, data = euarchontoglires)
+
+postHocs <- glht(PA_Model, linfct = mcp(order = "Tukey"))
+summary(postHocs) #Relationships between orders in terms of parental allocation
+
+postHocs2 <- glht(LS_Model, linfct = mcp(order = "Tukey"))
+summary(postHocs2) #Relationships between orders in terms of litter size
+```
+#Visualization with boxplot for mearn parental allocation in the 3 orders
+```{r}
+euarchontoglires %>% 
+  ggplot(aes(x = order, y = parental_allocation))+
+  geom_boxplot()+
+  theme_classic()
+```
+
+##Tukey Comparisons
+```{r}
+Tukey_Comp <- readr::read_csv("Tukey_Comparisons.csv")
+```
+
+##Parental Allocation vs. Average Age at Weaning
+
+```{r}
+Tukey_Comp %>% 
+  dplyr::select(Tukey_Contrast_Comparison, PAF, scaled_weaning_mo) %>% 
+  filter(!is.na(PAF)) %>% 
+  filter(!is.na(scaled_weaning_mo))
+
+```
+
+##Parental Allocation vs. Average Age at First Reproduction
+
+```{r}
+Tukey_Comp %>% 
+  dplyr::select(Tukey_Contrast_Comparison, PAF, scaled_AFR_mo) %>% 
+  filter(!is.na(PAF)) %>% 
+  filter(!is.na(scaled_AFR_mo))
+```
+
+##Parental Allocation vs. Average Litters per Year
+
+```{r}
+Tukey_Comp %>% 
+  dplyr::select(Tukey_Contrast_Comparison, PAF, litters_year) %>% 
+  filter(!is.na(PAF)) %>% 
+  filter(!is.na(litters_year))
+```
+
+##Parental Allocation vs Litters per Life
+
+```{r}
+Tukey_Comp %>% 
+  dplyr::select(Tukey_Contrast_Comparison, PAF, litters_life) %>% 
+  filter(!is.na(PAF)) %>% 
+  filter(!is.na(litters_life))
+```
+
+##Parental Allocation vs Total Offspring
+
+```{r}
+Tukey_Comp %>% 
+  dplyr::select(Tukey_Contrast_Comparison, PAF, offspring_tot) %>% 
+  filter(!is.na(PAF)) %>% 
+  filter(!is.na(offspring_tot))
+```
+
+
+
+
+
+
